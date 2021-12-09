@@ -6,7 +6,7 @@ import (
 	"log"
 	"net"
 
-	pb "github.com/0gener/banking-core/accounts/proto"
+	pb "github.com/0gener/banking-core-accounts/proto"
 	"google.golang.org/grpc"
 )
 

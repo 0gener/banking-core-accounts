@@ -1,4 +1,4 @@
-module github.com/0gener/banking-core/accounts
+module github.com/0gener/banking-core-accounts
 
 go 1.17
 
