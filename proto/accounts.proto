@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option go_package = "github.com/0gener/banking-core/accountsservice/proto";
+
+package accountsservice;
+
+service AccountsService {
+    rpc CreateAccount(CreateAccountRequest) returns (CreateAccountResponse) {}
+}
+
+message CreateAccountRequest {
+    string user_id = 1;
+    string currency = 2;
+}
+
+message CreateAccountResponse {
+    string account_number = 1;
+    string currency = 2;
+}
