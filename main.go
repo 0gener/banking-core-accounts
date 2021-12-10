@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
+	"strconv"
 
 	pb "github.com/0gener/banking-core-accounts/proto"
 	"google.golang.org/grpc"
@@ -14,8 +16,11 @@ type server struct {
 	pb.UnimplementedAccountsServiceServer
 }
 
-func (s *server) CreateAccount(context.Context, *pb.CreateAccountRequest) (*pb.CreateAccountResponse, error) {
-	return nil, nil
+func (s *server) CreateAccount(ctx context.Context, req *pb.CreateAccountRequest) (*pb.CreateAccountResponse, error) {
+	return &pb.CreateAccountResponse{
+		AccountNumber: strconv.FormatUint(rand.Uint64(), 10),
+		Currency:      req.Currency,
+	}, nil
 }
 
 func main() {
