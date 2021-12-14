@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"math/rand"
@@ -16,10 +17,33 @@ type server struct {
 	pb.UnimplementedAccountsServiceServer
 }
 
+var ErrInvalidUserId = errors.New("invalid user_id")
+var ErrInvalidCurrency = errors.New("invalid currency")
+
 func (s *server) CreateAccount(ctx context.Context, req *pb.CreateAccountRequest) (*pb.CreateAccountResponse, error) {
+	if req.UserId == "" {
+		return nil, ErrInvalidUserId
+	}
+	if req.Currency == "" {
+		return nil, ErrInvalidCurrency
+	}
 	return &pb.CreateAccountResponse{
-		AccountNumber: strconv.FormatUint(rand.Uint64(), 10),
-		Currency:      req.Currency,
+		Account: &pb.Account{
+			AccountNumber: strconv.FormatUint(rand.Uint64(), 10),
+			Currency:      req.Currency,
+		},
+	}, nil
+}
+
+func (s *server) GetAccount(ctx context.Context, req *pb.GetAccountRequest) (*pb.GetAccountResponse, error) {
+	if req.UserId == "" {
+		return nil, ErrInvalidUserId
+	}
+	return &pb.GetAccountResponse{
+		Account: &pb.Account{
+			AccountNumber: strconv.FormatUint(rand.Uint64(), 10),
+			Currency:      "EUR",
+		},
 	}, nil
 }
 
