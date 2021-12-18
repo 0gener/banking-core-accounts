@@ -9,18 +9,18 @@ import (
 	"net"
 	"strconv"
 
+	"github.com/0gener/banking-core-accounts/data"
 	pb "github.com/0gener/banking-core-accounts/proto"
 	"google.golang.org/grpc"
 )
 
 type server struct {
+	repo data.Repository
 	pb.UnimplementedAccountsServiceServer
 }
 
 var ErrInvalidUserId = errors.New("invalid user_id")
 var ErrInvalidCurrency = errors.New("invalid currency")
-
-var accounts map[string]*pb.Account
 
 func (s *server) CreateAccount(ctx context.Context, req *pb.CreateAccountRequest) (*pb.CreateAccountResponse, error) {
 	if req.UserId == "" {
@@ -30,17 +30,17 @@ func (s *server) CreateAccount(ctx context.Context, req *pb.CreateAccountRequest
 		return nil, ErrInvalidCurrency
 	}
 
-	if accounts == nil {
-		accounts = make(map[string]*pb.Account)
-	}
-
-	accounts[req.UserId] = &pb.Account{
+	account, _ := s.repo.Save(data.AccountEntity{
+		UserId:        req.UserId,
 		AccountNumber: strconv.FormatUint(rand.Uint64(), 10),
 		Currency:      req.Currency,
-	}
+	})
 
 	return &pb.CreateAccountResponse{
-		Account: accounts[req.UserId],
+		Account: &pb.Account{
+			AccountNumber: account.AccountNumber,
+			Currency:      account.Currency,
+		},
 	}, nil
 }
 
@@ -49,13 +49,24 @@ func (s *server) GetAccount(ctx context.Context, req *pb.GetAccountRequest) (*pb
 		return nil, ErrInvalidUserId
 	}
 
+	account, _ := s.repo.FindByUserId(req.UserId)
+
+	if account == nil {
+		return &pb.GetAccountResponse{}, nil
+	}
+
 	return &pb.GetAccountResponse{
-		Account: accounts[req.UserId],
+		Account: &pb.Account{
+			AccountNumber: account.AccountNumber,
+			Currency:      account.Currency,
+		},
 	}, nil
 }
 
 func main() {
-	s := &server{}
+	s := &server{
+		repo: data.NewInMemoryRepository(),
+	}
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", 5000))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
