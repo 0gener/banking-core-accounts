@@ -20,6 +20,8 @@ type server struct {
 var ErrInvalidUserId = errors.New("invalid user_id")
 var ErrInvalidCurrency = errors.New("invalid currency")
 
+var accounts map[string]*pb.Account
+
 func (s *server) CreateAccount(ctx context.Context, req *pb.CreateAccountRequest) (*pb.CreateAccountResponse, error) {
 	if req.UserId == "" {
 		return nil, ErrInvalidUserId
@@ -27,11 +29,18 @@ func (s *server) CreateAccount(ctx context.Context, req *pb.CreateAccountRequest
 	if req.Currency == "" {
 		return nil, ErrInvalidCurrency
 	}
+
+	if accounts == nil {
+		accounts = make(map[string]*pb.Account)
+	}
+
+	accounts[req.UserId] = &pb.Account{
+		AccountNumber: strconv.FormatUint(rand.Uint64(), 10),
+		Currency:      req.Currency,
+	}
+
 	return &pb.CreateAccountResponse{
-		Account: &pb.Account{
-			AccountNumber: strconv.FormatUint(rand.Uint64(), 10),
-			Currency:      req.Currency,
-		},
+		Account: accounts[req.UserId],
 	}, nil
 }
 
@@ -39,11 +48,9 @@ func (s *server) GetAccount(ctx context.Context, req *pb.GetAccountRequest) (*pb
 	if req.UserId == "" {
 		return nil, ErrInvalidUserId
 	}
+
 	return &pb.GetAccountResponse{
-		Account: &pb.Account{
-			AccountNumber: strconv.FormatUint(rand.Uint64(), 10),
-			Currency:      "EUR",
-		},
+		Account: accounts[req.UserId],
 	}, nil
 }
 
