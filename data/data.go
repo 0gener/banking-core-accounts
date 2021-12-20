@@ -7,7 +7,7 @@ type AccountEntity struct {
 }
 
 type Repository interface {
-	Save(AccountEntity) (AccountEntity, error)
+	Save(AccountEntity) (*AccountEntity, error)
 	FindByUserId(string) (*AccountEntity, error)
 }
 
@@ -21,9 +21,9 @@ func NewInMemoryRepository() *inMemoryRepository {
 	}
 }
 
-func (r *inMemoryRepository) Save(entity AccountEntity) (AccountEntity, error) {
+func (r *inMemoryRepository) Save(entity AccountEntity) (*AccountEntity, error) {
 	r.m[entity.UserId] = entity
-	return entity, nil
+	return &entity, nil
 }
 
 func (r *inMemoryRepository) FindByUserId(userId string) (*AccountEntity, error) {

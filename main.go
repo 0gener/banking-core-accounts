@@ -21,6 +21,7 @@ type server struct {
 
 var ErrInvalidUserId = errors.New("invalid user_id")
 var ErrInvalidCurrency = errors.New("invalid currency")
+var ErrRepository = errors.New("error calling repository")
 
 func (s *server) CreateAccount(ctx context.Context, req *pb.CreateAccountRequest) (*pb.CreateAccountResponse, error) {
 	if req.UserId == "" {
@@ -30,11 +31,15 @@ func (s *server) CreateAccount(ctx context.Context, req *pb.CreateAccountRequest
 		return nil, ErrInvalidCurrency
 	}
 
-	account, _ := s.repo.Save(data.AccountEntity{
+	account, err := s.repo.Save(data.AccountEntity{
 		UserId:        req.UserId,
 		AccountNumber: strconv.FormatUint(rand.Uint64(), 10),
 		Currency:      req.Currency,
 	})
+
+	if err != nil {
+		return nil, ErrRepository
+	}
 
 	return &pb.CreateAccountResponse{
 		Account: &pb.Account{
@@ -49,7 +54,10 @@ func (s *server) GetAccount(ctx context.Context, req *pb.GetAccountRequest) (*pb
 		return nil, ErrInvalidUserId
 	}
 
-	account, _ := s.repo.FindByUserId(req.UserId)
+	account, err := s.repo.FindByUserId(req.UserId)
+	if err != nil {
+		return nil, ErrRepository
+	}
 
 	if account == nil {
 		return &pb.GetAccountResponse{}, nil
