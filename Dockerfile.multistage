@@ -1,0 +1,29 @@
+# syntax=docker/dockerfile:1
+
+## Build
+FROM golang:1.17-alpine as builder
+
+WORKDIR ${GOPATH}/github.com/0gener/banking-core-accounts
+
+COPY go.mod ./
+COPY go.sum ./
+
+RUN go mod download
+
+COPY *.go .
+COPY data data
+COPY proto proto
+
+RUN go build -o /banking-core-accounts
+
+
+## Deploy
+FROM gcr.io/distroless/base-debian10
+
+WORKDIR /
+
+COPY --from=build /banking-core-accounts /banking-core-accounts
+
+EXPOSE 5000
+
+ENTRYPOINT [ "/banking-core-accounts" ]
